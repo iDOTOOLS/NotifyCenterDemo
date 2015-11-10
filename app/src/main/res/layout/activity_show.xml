@@ -10,8 +10,13 @@
 	                                              <!--android:layout_height="match_parent" android:id="@+id/refresh_layout">-->
 
 	<WebView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:id="@+id/webView"/>
+	<ProgressBar
+			style="?android:attr/progressBarStyleLarge"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:id="@+id/webView"/>
+			android:id="@+id/progressBar" android:layout_centerVertical="true" android:layout_centerHorizontal="true"/>
 	<!--</android.support.v4.widget.SwipeRefreshLayout>-->
 </RelativeLayout>

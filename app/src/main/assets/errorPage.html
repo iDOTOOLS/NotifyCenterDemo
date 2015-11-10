@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1, user-scalable=no">
+    <title>Theme Center Error Page</title>
+    <style type="text/css">
+    </style>
+
+<body>
+    <div style="margin-top:150px;" align="center">
+        <div><img src="img/shuaxin.png" style="height: 82px;width:82px;margin-bottom: 56px;" onclick="reloadPage(this);"/></div>
+        <div id='info' style="color: #000;font-size: 20px;-moz-opacity:0.4;opacity:0.4;">An error, please try again later</div>
+    </div>
+<script>
+    function getUrlParam(name) {
+        var reg
+                = new RegExp("(^|&)" +
+                name + "=([^&]*)(&|$)");
+        var r
+                = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]);
+        return null;
+    }
+    function reloadPage(obj){
+        obj.src="img/shuaxin_press.png";
+        var url = errorPage.reload();
+        location.href=url;
+    }
+    var deviceLang = getUrlParam('deviceLang');
+    var info = document.getElementById('info');
+    if(deviceLang === 'zh_CN'){
+	info.innerHTML = '网络错误,请重试';
+    }else if(deviceLang === 'zh_TW' || deviceLang === 'zh_HK'){
+	info.innerHTML = '網絡錯誤,請重試';
+    }else{
+        info.innerHTML = 'An error, please try again later';
+    }
+</script>
+</body>
+</html>
+

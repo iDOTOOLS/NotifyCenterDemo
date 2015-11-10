@@ -44,9 +44,20 @@ public class JsInterface {
         closeLayerFlag = flag;
     }
     @JavascriptInterface
-    public int getDpi(){
+    public int getWidthDp(){
         DisplayMetrics metrics =  mContext.getResources().getDisplayMetrics();
-        return metrics.densityDpi;
+        int width = metrics.widthPixels;
+        float density = metrics.density;
+        int height = metrics.heightPixels;
+        if (height < width){
+            int t = height;
+            height = width;
+            width = t;
+        }
+
+        int widthDp =(int) (width/density +0.5f);
+        return widthDp;
     }
+
 
 }
