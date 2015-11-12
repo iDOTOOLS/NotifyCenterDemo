@@ -1,6 +1,9 @@
 package com.idotools.notifycenterdemo;
 
-import android.content.*;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     Context mContext = this;
@@ -20,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 //    SharedPreferences sharedPreferences;
 //    SharedPreferences.Editor spEditor;
 
-    Button button,button2,button3,button4,button5;
+    Button button,button2,button3,button4,button5,button6;
     TextView TVtitle,TVcontentAbstract;
     ImageView IVicon;
 
@@ -58,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
         button2 = (Button) findViewById(R.id.button2);
         button3 = (Button) findViewById(R.id.button3);
         button4 = (Button) findViewById(R.id.button4);
-        button5 = (Button) findViewById(R.id.button5);
+        button6 = (Button) findViewById(R.id.button6);
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -89,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "button start clicked");
                 Intent intent = new Intent(MainActivity.this,PullService.class);
                 startService(intent);
-                bindService(intent,mConnection,0);
+                bindService(intent, mConnection, 0);
                 Toast.makeText(mContext,"Service started",Toast.LENGTH_SHORT).show();
 
             }
@@ -100,18 +105,17 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "button list clicked");
                 Intent intent = new Intent(MainActivity.this, ShowActivity.class);
                 intent.putExtra("type", "list");
-                intent.putExtra("showPicFlag", true);
                 startActivity(intent);
+                Log.d("fontSize", String.valueOf(MyApplication.getFontSizeLevel()));
 
             }
         });
-        button5.setOnClickListener(new View.OnClickListener() {
+
+        button6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "button list clicked");
-                Intent intent = new Intent(MainActivity.this, ShowActivity.class);
-                intent.putExtra("type","list");
-                intent.putExtra("showPicFlag",false);
+
+                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
                 startActivity(intent);
 
             }

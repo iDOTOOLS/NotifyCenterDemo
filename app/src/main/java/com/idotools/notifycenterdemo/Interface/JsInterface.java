@@ -4,9 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.DisplayMetrics;
 import android.webkit.JavascriptInterface;
-import android.widget.Toast;
 import com.idotools.notifycenterdemo.ImageActivity;
-import com.idotools.notifycenterdemo.ShowActivity;
+import com.idotools.notifycenterdemo.MyApplication;
 
 /**
  * Created by LvWind on 15/11/3.
@@ -58,6 +57,24 @@ public class JsInterface {
         int widthDp =(int) (width/density +0.5f);
         return widthDp;
     }
+    @JavascriptInterface
+    public String  userId(){
+        return MyApplication.getUserId();
+    }
 
+    @JavascriptInterface
+    public  String languageCode(){
+        return MyApplication.getLanguageInfo();
+    }
+
+    @JavascriptInterface
+    public boolean isPicShow(){
+        return MyApplication.getShowPicFlag();
+    }
+
+    @JavascriptInterface
+    public  int fontSizeLevel(){
+        return MyApplication.getFontSizeLevel();
+    }
 
 }

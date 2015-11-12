@@ -54,6 +54,6 @@
 			android:text="1.服务启动后按照设定的更新间隔自动拉取.\n2.服务启动后可以手动拉取(测试用,10秒间隔)\n\n**只在办公室局域网内有效**"
 			android:id="@+id/textView" android:layout_below="@+id/button4" android:layout_centerHorizontal="true"
 			android:layout_marginTop="106dp"/>
-	<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Get List(No Pic)"
-	        android:id="@+id/button5" android:layout_below="@+id/button4" android:layout_centerHorizontal="true"/>
+	<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Settings"
+	        android:id="@+id/button6" android:layout_centerHorizontal="true" android:layout_below="@+id/button4"/>
 </RelativeLayout>

@@ -1,0 +1,15 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<SwitchPreference
+			android:key="pic_auto_load_switch"
+			android:title="Auto show pictures"
+			android:defaultValue="true" />
+	<ListPreference
+		android:key="fontSizeLevel"
+		android:title="Font Size"
+		android:entries="@array/fontSize"
+		android:entryValues="@array/fontSizeAlias"
+		android:defaultValue="2"
+		android:summary="%s" />
+
+</PreferenceScreen>

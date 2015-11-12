@@ -14,14 +14,12 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 import com.idotools.notifycenterdemo.Model.FinalMessage;
 import com.idotools.notifycenterdemo.Model.NotifyResult;
 import com.idotools.notifycenterdemo.Model.StrategyResult;
 import com.idotools.notifycenterdemo.Tools.GsonTools;
 import com.idotools.notifycenterdemo.Tools.HttpUtils;
 import com.idotools.notifycenterdemo.Tools.MyPicasso;
-import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -52,6 +50,7 @@ public class PullService extends Service {
 
 
     String notifyUrl = "https://192.168.1.79:8088/getNotice";
+
     String strategyUrl = "https://192.168.1.79:8088/getStrategy";
     static StrategyResult strategyResult;
     static NotifyResult notifyResult;

@@ -9,19 +9,18 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Toast;
 import com.idotools.notifycenterdemo.Tools.MyPicasso;
+import com.idotools.notifycenterdemo.view.ViewPagerFixed;
 import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class ImageActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
     Context mContext =this;
-    ViewPager viewPager;
+    ViewPagerFixed viewPager;
     PhotoViewAttacher mAttacher;
     PhotoView[] photoViews;
     ActionBar actionBar;
@@ -35,7 +34,7 @@ public class ImageActivity extends AppCompatActivity implements ViewPager.OnPage
         actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#00000000")));
-        viewPager = (ViewPager) findViewById(R.id.pager);
+        viewPager = (ViewPagerFixed) findViewById(R.id.pager);
         //load image
         Intent intent = getIntent();
         //String imageUrl = intent.getStringExtra("imageurl");

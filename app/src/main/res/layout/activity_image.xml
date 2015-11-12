@@ -6,12 +6,12 @@
              tools:context="com.idotools.notifycenterdemo.ImageActivity">
 
 
-	<android.support.v4.view.ViewPager
+	<com.idotools.notifycenterdemo.view.ViewPagerFixed
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/pager"
 		    android:layout_gravity="center">
-    </android.support.v4.view.ViewPager>
+    </com.idotools.notifycenterdemo.view.ViewPagerFixed>
 
 	<!--<ImageView android:id="@+id/fullscreen_content"-->
 	          <!--android:layout_width="fill_parent"-->

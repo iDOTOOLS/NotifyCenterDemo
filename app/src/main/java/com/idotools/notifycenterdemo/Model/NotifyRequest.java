@@ -1,5 +1,7 @@
 package com.idotools.notifycenterdemo.Model;
 
+import com.idotools.notifycenterdemo.MyApplication;
+
 /**
  * Created by LvWind on 15/10/29.
  */
@@ -7,6 +9,8 @@ public class NotifyRequest {
     private long lastTimestamp = 0;
     private String secretKey = "YKTnw55hQBZBnc1d";
     private String districtCode = "110105";
+    private String userId = MyApplication.getUserId(); //TODO get from SDK
+    private String locale = MyApplication.getLanguageInfo();
 
     public NotifyRequest(){
     }
@@ -36,5 +40,21 @@ public class NotifyRequest {
 
     public void setTimestamp(long timestamp) {
         this.lastTimestamp = timestamp;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getLocale() {
+        return locale;
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }
