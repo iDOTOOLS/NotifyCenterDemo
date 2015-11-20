@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 import com.idotools.notifycenterdemo.Model.FinalMessage;
 import com.idotools.notifycenterdemo.Model.NotifyResult;
 import com.idotools.notifycenterdemo.Model.StrategyResult;
@@ -21,7 +22,9 @@ import com.idotools.notifycenterdemo.Tools.GsonTools;
 import com.idotools.notifycenterdemo.Tools.HttpUtils;
 import com.idotools.notifycenterdemo.Tools.MyPicasso;
 
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -36,12 +39,15 @@ public class PullService extends Service {
 
     int minUpdateInterval[] = new int[24];
     int maxUpdateInterval[] = new int[24];
-    int connectionTimeout;
-    int reconnectInterval;
+    int socketTimeout;
+    int reconnectInterval = 0;
     int maxReconnectInterval;
     boolean keepAlive;
     //lastTimestamp
-    long lastTimeStamp = 0;
+    long lastTimeStamp;
+
+    int reconnectCountStrategy = 0;
+    int reconnectCountNotify = 0;
 
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor spEditor;
@@ -49,9 +55,9 @@ public class PullService extends Service {
     int notifyid = 0;
 
 
-    String notifyUrl = "https://192.168.1.79:8088/getNotice";
+    String notifyUrl = "https://data3.idotools.com:10325/getNotice";
 
-    String strategyUrl = "https://192.168.1.79:8088/getStrategy";
+    String strategyUrl = "https://data3.idotools.com:10325/getStrategy";
     static StrategyResult strategyResult;
     static NotifyResult notifyResult;
 
@@ -76,13 +82,16 @@ public class PullService extends Service {
         //sharedpreference
         sharedPreferences = getSharedPreferences("updateStrategy", Context.MODE_PRIVATE);
         spEditor = sharedPreferences.edit();
-        getStrategyAndPull(true);
+
+        //getStrategyAndPull(true);
+        getStrategy(false);
 
         handler = new Handler();
         runnable = new Runnable(){
             @Override
             public void run() {
                 pullMessageByStrategy();
+                getStrategy(true);
                 handler.postDelayed(this, getRandomInterval());//
 
                 //debug only
@@ -93,7 +102,6 @@ public class PullService extends Service {
 
         handler.postDelayed(runnable, 5000);//
 
-
     }
 
     @Override
@@ -103,39 +111,52 @@ public class PullService extends Service {
         super.onDestroy();
     }
 
-    private void getStrategyAndPull(boolean needRefresh){
+    private void getStrategy(boolean needRefresh){
         if(needRefresh){
-            new PullStrategyTask().execute(strategyUrl);
-        }else {
-            //更新策略
-            for (int i = 0; i < 24; i++) {
-                minUpdateInterval[i] = sharedPreferences.getInt("minUpdateInterval" + i, 0);
-                maxUpdateInterval[i] = sharedPreferences.getInt("maxUpdateInterval" + i, 0);
-            }
-
-            connectionTimeout = sharedPreferences.getInt("connectionTimeout", 0);
-            reconnectInterval = sharedPreferences.getInt("reconnectInterval", 0);
-            maxReconnectInterval = sharedPreferences.getInt("maxReconnectInterval", 0);
-            keepAlive = sharedPreferences.getBoolean("keepAlive", false);
-            //lastTimestamp
-            lastTimeStamp = sharedPreferences.getLong("lastTimeStamp", 0);
-
-            pullMessageByStrategy();
+            new PullStrategyTask().execute(0);
         }
+        //更新策略
+        for (int i = 0; i < 24; i++) {
+            minUpdateInterval[i] = sharedPreferences.getInt("minUpdateInterval" + i, 1);
+            maxUpdateInterval[i] = sharedPreferences.getInt("maxUpdateInterval" + i, 3);
+        }
+
+        socketTimeout = sharedPreferences.getInt("socketTimeout", 30);
+        reconnectInterval = sharedPreferences.getInt("reconnectInterval", 60);
+        maxReconnectInterval = sharedPreferences.getInt("maxReconnectInterval", 3600);
+        keepAlive = sharedPreferences.getBoolean("keepAlive", false);
+        //lastTimestamp
+        lastTimeStamp = sharedPreferences.getLong("lastTimeStamp", 0);
+
+        //pullMessageByStrategy();
+
     }
     private void pullMessageByStrategy(){
         long interval = System.currentTimeMillis() - lastTimeStamp;
 
         if (interval >= getRandomInterval()){
-            new PullNotifyTask().execute(notifyUrl);
+            new PullNotifyTask().execute(0);
         }
 
     }
 
-    public void pullMessageNow(){
-        new PullNotifyTask().execute(notifyUrl);
-
+    public  void pullMessageNow(){
+        new PullNotifyTask().execute(0);
+        new PullStrategyTask().execute(0);
     }
+    public void pullMessageRetry(int count){
+        int interval;
+        if (reconnectInterval *count > maxReconnectInterval){
+            interval = maxReconnectInterval;
+        } else {
+            interval = count * reconnectInterval;
+        }
+
+        new PullNotifyTask().execute(interval);
+        Log.i("pullMessageRetry","retry count="+ count);
+        Log.i("pullMessageRetry","retry Interval="+ interval);
+    }
+
 
     private long getRandomInterval(){
         int h = getHour();
@@ -147,23 +168,29 @@ public class PullService extends Service {
     }
 
 
-    class PullStrategyTask extends AsyncTask<String,Void,String> {
+    class PullStrategyTask extends AsyncTask<Integer,Void,String> {
 
         @Override
 
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-
             int status;
-            if (result != null) {
-                Log.d("PullStrategyTask",result);
-                strategyResult = GsonTools.getResult(result, StrategyResult.class);
-                status = strategyResult.getStatus();
+
+            if (result != null){
+                if(result.equals("UnknownHost")){
+                    status = 404;
+                } else{
+                    Log.d("PullStrategyTask",result);
+                    strategyResult = GsonTools.getResult(result, StrategyResult.class);
+                    status = strategyResult.getStatus();
+                }
             } else {
                 status = 204;
             }
 
+
             if(status == 200) {
+                reconnectCountStrategy=0;
                 for (int i=0 ;i<24;i++) {
                     minUpdateInterval[i] = strategyResult.getMinUpdateInterval(i);
                     spEditor.putInt("minUpdateInterval" + i , minUpdateInterval[i]);
@@ -172,8 +199,8 @@ public class PullService extends Service {
                     spEditor.putInt("maxUpdateInterval" + i, maxUpdateInterval[i]);
                 }
 
-                connectionTimeout = strategyResult.getConnectionTimeout();
-                spEditor.putInt("connectionTimeout", connectionTimeout);
+                socketTimeout = strategyResult.getSocketTimeout();
+                spEditor.putInt("connectionTimeout", socketTimeout);
 
                 reconnectInterval = strategyResult.getReconnectInterval();
                 spEditor.putInt("reconnectInterval", reconnectInterval);
@@ -185,19 +212,41 @@ public class PullService extends Service {
                 spEditor.putBoolean("keepAlive", keepAlive);
 
                 spEditor.commit();
+            } else if (status == 204){
+                reconnectCountStrategy=0;
+                Log.d(TAG,"204: no update");
+            } else if (status == 404){
+                reconnectCountStrategy++;
+                //pullMessageRetry(reconnectCountStrategy);
+                Log.d(TAG,"404");
             } else {
-                Log.d(TAG,String.valueOf(status));
+                reconnectCountStrategy=0;
+                Log.d(TAG,"error status: " + status);
             }
 
         }
 
 
         @Override
-        protected String doInBackground(String... params) {
+        protected String doInBackground(Integer... params) {
+            int interval = params[0];
+            //重连延时
             try {
-                String result = HttpUtils.postResponse(params[0], lastTimeStamp);
+                Thread.sleep(interval *1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                String result = HttpUtils.postResponse(strategyUrl, lastTimeStamp);
                 return result;
+            } catch (UnknownHostException e){
+                Log.d(TAG,"connection error");
+                //e.printStackTrace();
+                return "UnknownHost";
             } catch (IOException e) {
+
+                Log.d(TAG,"IOException");
                 e.printStackTrace();
                 return null;
             }
@@ -213,37 +262,69 @@ public class PullService extends Service {
     }
 
 
-    class PullNotifyTask extends AsyncTask<String,Void,String> {
+    class PullNotifyTask extends AsyncTask<Integer,Void,String> {
 
         @Override
 
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             int status;
-            if (result != null) {
-                Log.d("PullNotifyTask",result);
-                notifyResult = GsonTools.getResult(result, NotifyResult.class);
-                lastTimeStamp = notifyResult.getTimestamp();
-                status = notifyResult.getStatus();
+
+            if (result != null){
+                if(result.equals("UnknownHost")){
+                    status = 404;
+                } else {
+                    Log.d("PullNotifyTask",result);
+                    notifyResult = GsonTools.getResult(result, NotifyResult.class);
+                    lastTimeStamp = notifyResult.getTimestamp();
+                    spEditor.putLong("lastTimeStamp",lastTimeStamp).commit();
+                    status = notifyResult.getStatus();
+                }
             } else {
                 status = 204;
             }
 
+
             if(status == 200) {
                 FinalMessage finalMessage = notifyResult.getFinalMessage();
                 showNotification(finalMessage);
+                reconnectCountNotify =0;
+            } else if (status == 204){
+                reconnectCountNotify =0;
+                Log.d(TAG,"204: no update");
+            } else if (status == 404){
+                reconnectCountNotify++;
+                pullMessageRetry(reconnectCountNotify);
+                Log.d(TAG,"404");
             } else {
-                Log.d(TAG,String.valueOf(status));
+                reconnectCountNotify=0;
+                Log.d(TAG,"error status: " + status);
             }
         }
 
 
         @Override
-        protected String doInBackground(String... params) {
+        protected String doInBackground(Integer... params) {
+            int interval = params[0];
+            Log.i("PullNotifyTask","interval:" + interval);
+            //重连延时
             try {
-                String result = HttpUtils.postResponse(params[0], lastTimeStamp);
+                Thread.sleep(interval *1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+
+            try {
+                String result = HttpUtils.postResponse(notifyUrl, lastTimeStamp);
                 return result;
+            } catch (UnknownHostException e){
+                Log.d(TAG,"connection error");
+                //e.printStackTrace();
+                return "UnknownHost";
             } catch (IOException e) {
+
+                Log.d(TAG,"IOException");
                 e.printStackTrace();
                 return null;
             }
@@ -264,6 +345,7 @@ public class PullService extends Service {
         int Hr24=c.get(Calendar.HOUR_OF_DAY);
         return Hr24;
     }
+
 
     private void showNotification(FinalMessage finalMessage){
         int id = notifyid;

@@ -6,7 +6,7 @@ package com.idotools.notifycenterdemo.Model;
 public class StrategyResult {
     private MinUpdateInterval minUpdateInterval;
     private MaxUpdateInterval maxUpdateInterval;
-    private int connectionTimeout;
+    private int socketTimeout;
     private int reconnectInterval;
     private int maxReconnectInterval;
     private boolean keepalive;
@@ -14,8 +14,8 @@ public class StrategyResult {
 
     public StrategyResult(){}
 
-    public int getConnectionTimeout() {
-        return connectionTimeout;
+    public int getSocketTimeout() {
+        return socketTimeout;
     }
 
     public int getMaxReconnectInterval() {

@@ -1,5 +1,6 @@
 package com.idotools.notifycenterdemo;
 
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,9 +34,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         //bind service
-//        Intent intent = new Intent(MainActivity.this,PullService.class);
-//
-//        bindService(intent, mConnection, BIND_AUTO_CREATE);
+        Intent intent = new Intent(MainActivity.this,PullService.class);
+        bindService(intent, mConnection, 0);
     }
 
     @Override
@@ -141,143 +141,14 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    //    private void postRequest(final String url){
-//        RequestBody body = RequestBody.create(JSON, requestStirng);
-//        final Request request = new Request.Builder().url(url).post(body).build();
-//        //异步线程
-//        client.newCall(request).enqueue(new Callback() {
-//
-//
-//            @Override
-//            public void onFailure(Request request, IOException e) {
-//            // TODO
-//            }
-//
-//            @Override
-//            public void onResponse(Response response) throws IOException {
-//                String responseString = response.body().string();
-//                Log.d("responseString", responseString);
-//                int statusCode = response.code();
-//                //Log.d("header", response.header("Connection"));
-//
-//                if (statusCode == 204){
-//                    notifyRequestHandler.obtainMessage(MSG_FAILURE_204, null).sendToTarget();
-//                } else {
-//                    if (url.equals(notifyUrl)) {
-//                        NotifyResult notifyResult = GsonTools.getResult(responseString, NotifyResult.class);
-//                        int status = notifyResult.getStatus();
-//                        if (status == 200) {
-//                            notifyRequestHandler.obtainMessage(MSG_SUCCESS_200, notifyResult).sendToTarget();
-//                        } else if (status == 204) {
-//                            notifyRequestHandler.obtainMessage(MSG_FAILURE_204, null).sendToTarget();
-//                        } else if (status == 404) {
-//                            notifyRequestHandler.obtainMessage(MSG_FAILURE_404, null).sendToTarget();
-//                        } else if (status == 500) {
-//                            notifyRequestHandler.obtainMessage(MSG_FAILURE_500, null).sendToTarget();
-//                        }
-//
-//                    } else if(url.equals(strategyUrl)){
-//                        StrategyResult strategyResult = gsonTools.getResult(responseString,StrategyResult.class);
-//                        int status = strategyResult.getStatus();
-//                        if (status == 200){
-//                            strategyRequestHandler.obtainMessage(MSG_SUCCESS_200, strategyResult).sendToTarget();
-//                        } else if (status == 204) {
-//                            strategyRequestHandler.obtainMessage(MSG_FAILURE_204, null).sendToTarget();
-//                        } else if (status == 404) {
-//                            strategyRequestHandler.obtainMessage(MSG_FAILURE_404, null).sendToTarget();
-//                        } else if (status == 500) {
-//                            strategyRequestHandler.obtainMessage(MSG_FAILURE_500, null).sendToTarget();
-//                        }
-//
-//                    }
-//                }
-//                response.body().close(); //关闭连接
-//            }
-//        });
-//    }
-
-
-//    private void showMessage(FinalMessage finalMessage){
-//        int id = notifyid;
-//        notifyid++;//通知id
-//
-//        String title = finalMessage.getTitle();
-//        String contentAbstract = finalMessage.getContentAbstract();
-//        Log.d("ID",finalMessage.getId());
-//        long msgid = Long.parseLong(finalMessage.getId()); //信息id
-//        String icon = finalMessage.getIcon();
-//
-//        TVtitle.setText(title);
-//        TVcontentAbstract.setText(contentAbstract);
-//        Picasso.with(mContext).load(icon).into(IVicon);
-//
-//
-//        //bulid notification
-//        NotificationCompat.Builder mBuilder =
-//                new NotificationCompat.Builder(this)
-//                        .setSmallIcon(R.drawable.ic_stat_notify)
-//                        .setContentTitle(title)
-//                        .setContentText(contentAbstract);
-//        NotificationManager mNotifyMgr =
-//                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//
-//        Notification notification= mBuilder.build();
-//
-//
-//        //remoteviewt
-//        RemoteViews remoteViews =
-//                new RemoteViews(this.getPackageName(), R.layout.notification);
-//        notification.contentView = remoteViews;
-//        remoteViews.setTextViewText(R.id.title,title);
-//        remoteViews.setTextViewText(R.id.text, contentAbstract);
-//        mNotifyMgr.notify(id, notification);
-//
-//
-//        Picasso.with(mContext).load(icon).into(remoteViews,R.id.image,id,notification);
-//
-//
-//    }
-//    //忽略自签SSL证书错误
-//    private static OkHttpClient getUnsafeOkHttpClient() {
-//        try {
-//            // Create a trust manager that does not validate certificate chains
-//            final TrustManager[] trustAllCerts = new TrustManager[]{
-//                    new X509TrustManager() {
-//                        @Override
-//                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-//                        }
-//
-//                        @Override
-//                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-//                        }
-//
-//                        @Override
-//                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-//                            return null;
-//                        }
-//                    }
-//            };
-//
-//            // Install the all-trusting trust manager
-//            final SSLContext sslContext = SSLContext.getInstance("SSL");
-//            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-//            // Create an ssl socket factory with our all-trusting manager
-//            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-//
-//            OkHttpClient okHttpClient = new OkHttpClient();
-//            okHttpClient.setSslSocketFactory(sslSocketFactory);
-//            okHttpClient.setHostnameVerifier(new HostnameVerifier() {
-//                @Override
-//                public boolean verify(String hostname, SSLSession session) {
-//                    return true;
-//                }
-//            });
-//
-//            return okHttpClient;
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

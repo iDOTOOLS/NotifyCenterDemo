@@ -1,20 +1,26 @@
 package com.idotools.notifycenterdemo.Tools;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import com.google.gson.Gson;
 import com.idotools.notifycenterdemo.Model.NotifyRequest;
+import com.idotools.notifycenterdemo.MyApplication;
 import com.squareup.okhttp.*;
 
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.security.cert.CertificateException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by LvWind on 15/10/30.
  */
 public class HttpUtils {
     private static final String TAG = HttpUtils.class.getSimpleName();
-    static Gson gson = new Gson();
+    private static Gson gson = new Gson();
+    private static SharedPreferences sp = MyApplication.getAppContext().getSharedPreferences("updateStrategy", Context.MODE_PRIVATE);
+    private static int timeout = sp.getInt("socketTimeout", 30);
 
 
     //okhttp - 网络连接库
@@ -33,8 +39,13 @@ public class HttpUtils {
         notifyRequest = new NotifyRequest(lastTimestamp);
         requestStirng = gson.toJson(notifyRequest);
         Log.d(TAG,requestStirng);
+
+        //set timeout
+        client.setConnectTimeout(timeout , TimeUnit.SECONDS);
+
         RequestBody body = RequestBody.create(JSON, requestStirng);
         final Request request = new Request.Builder().url(url).post(body).build();
+
         Response response = client.newCall(request).execute();
 
         if (response.code() != 204) {

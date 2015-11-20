@@ -28,6 +28,11 @@ public class MyApplication extends Application{
         //TODO SDK
         return "123456";
     }
+    public static long getLastTimestamp(){
+        SharedPreferences sp = context.getSharedPreferences("updateStrategy", Context.MODE_PRIVATE);
+        long timestamp = sp.getLong("lastTimeStamp", 0);
+        return timestamp;
+    }
     public static boolean getShowPicFlag(){
         PreferenceManager.setDefaultValues(context, R.xml.preference, false);
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);

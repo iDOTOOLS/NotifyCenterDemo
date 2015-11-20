@@ -3,6 +3,7 @@ package com.idotools.notifycenterdemo;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
@@ -26,7 +27,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
     ProgressBar progressBar;
 
     String msgid;
-    String baseUrl = "https://192.168.1.79:8088/";
+    String baseUrl = "https://data3.idotools.com:10325/notificationCenter";
     String errorUrl = "file:///android_asset/errorPage.html";
     String finalUrl = "";
 
@@ -35,14 +36,15 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
     JsInterface jsInterface;
     Timer timer;
     long timeout = 5000;
-
-
-    @SuppressLint("SetJavaScriptEnabled")
-    @Override
+    long timestamp;
+    SharedPreferences sp;
+    SharedPreferences.Editor editor;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show);
 
+        sp = getSharedPreferences("updateStrategy",MODE_PRIVATE);
+        editor = sp.edit();
 
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -51,7 +53,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setAppCacheMaxSize(1024 * 1024 * 8);
         webView.getSettings().setDatabaseEnabled(true);
-        String cacheDirPath =webView.getContext().getDir("database",MODE_PRIVATE).getPath();
+        String cacheDirPath =webView.getContext().getDir("database",MODE_PRIVATE).getAbsolutePath();
         webView.getSettings().setDatabasePath(cacheDirPath);
         webView.getSettings().setAppCacheEnabled(true);
         webView.getSettings().setAppCachePath(cacheDirPath);
@@ -110,6 +112,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
+
             }
 
             @Override
@@ -129,6 +132,10 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
                 handler.proceed();
             }
 
+            @Override
+            public void onLoadResource(WebView view, String url) {
+                super.onLoadResource(view, url);
+            }
         });
 
 
@@ -140,16 +147,21 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
             msgid = intent.getStringExtra("msgid");
             finalUrl = getArticleUrl(msgid);
             webView.loadUrl(finalUrl);
-        } else if (intentType.equals("list")) {
+        } else if (intentType.equals("list")) {  //主动进入列表
+
             finalUrl = getListUrl();
             webView.loadUrl(finalUrl);
         }
+        //update timestamp
+        timestamp = System.currentTimeMillis();
+        editor.putLong("lastTimeStamp",timestamp);
 
 
     }
 
     private String getArticleUrl(String msgid) {
-        String articleUrl = baseUrl + "article?articleId=" + msgid
+        String articleUrl = baseUrl + "?action=article"
+                + "&articleId=" + msgid
                 + "&userId=" +MyApplication.getUserId()
                 + "&languageCode="+MyApplication.getLanguageInfo();
         Log.d("url", articleUrl);
@@ -157,7 +169,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
     }
 
     private String getListUrl() {
-        String articleUrl = baseUrl + "articleList?"
+        String articleUrl = baseUrl + "?action=articleList"
                 + "&userId=" +MyApplication.getUserId()
                 + "&languageCode="+MyApplication.getLanguageInfo();
         Log.d("url", articleUrl);
@@ -182,21 +194,11 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_BACK:
-                    if (intentType.equals("article")) {
-                        if (webView.getUrl().equals(getListUrl())) {
-                            finish();
-                        } else {
-                            webView.loadUrl(getListUrl());
-                            intentType = "list";
-                        }
 
+                    if (jsInterface.isCloseWebView) {
+                        finish();
                     } else {
-                        if (jsInterface.isCloseWebView) {
-                            finish();
-                        } else {
-                            webView.loadUrl("javascript:closeLayer()");
-                        }
-
+                        webView.loadUrl("javascript:closeLayer()");
                     }
                     return false;
             }

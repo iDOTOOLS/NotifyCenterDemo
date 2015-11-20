@@ -6,7 +6,7 @@ import com.idotools.notifycenterdemo.MyApplication;
  * Created by LvWind on 15/10/29.
  */
 public class NotifyRequest {
-    private long lastTimestamp = 0;
+    private long lastTimestamp =MyApplication.getLastTimestamp();
     private String secretKey = "YKTnw55hQBZBnc1d";
     private String districtCode = "110105";
     private String userId = MyApplication.getUserId(); //TODO get from SDK
