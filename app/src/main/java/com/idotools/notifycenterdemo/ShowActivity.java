@@ -14,8 +14,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.*;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import com.idotools.notifycenterdemo.Interface.JsInterface;
 
 import java.util.Timer;
@@ -25,6 +27,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
     Context mContext = this;
     WebView webView;
     ProgressBar progressBar;
+    RelativeLayout relativeLayout;
 
     String msgid;
     String baseUrl = "https://data3.idotools.com:10325/notificationCenter";
@@ -43,8 +46,10 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show);
 
-        sp = getSharedPreferences("updateStrategy",MODE_PRIVATE);
+        sp = getSharedPreferences("updateStrategy", MODE_PRIVATE);
         editor = sp.edit();
+
+        relativeLayout = (RelativeLayout) findViewById(R.id.show_activity_relative_layout);
 
         webView = (WebView) findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -217,4 +222,17 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         return finalUrl;
 
     }
+
+
+    /**
+     *A fix of
+     *android.view.WindowLeaked: Activity has leaked window android.widget.ZoomButtonsController$Container that was originally added here
+     *http://stackoverflow.com/questions/27254570/android-view-windowleaked-activity-has-leaked-window-android-widget-zoombuttons
+     **/
+    @Override
+    public void finish(){
+        relativeLayout.removeView(webView);
+        super.finish();
+    }
+
 }

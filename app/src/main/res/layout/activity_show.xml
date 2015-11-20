@@ -4,6 +4,7 @@
 		xmlns:tools="http://schemas.android.com/tools"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		android:id="@+id/show_activity_relative_layout"
 		tools:context="com.idotools.notifycenterdemo.ShowActivity">
 
 	<!--<android.support.v4.widget.SwipeRefreshLayout android:layout_width="match_parent"-->

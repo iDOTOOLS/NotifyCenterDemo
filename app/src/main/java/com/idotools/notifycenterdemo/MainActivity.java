@@ -41,9 +41,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy(){
         super.onDestroy();
-        if(mService != null) {
-            unbindService(mConnection);
-        }
+        unbindService(mConnection);
+
     }
 
     @Override
