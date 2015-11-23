@@ -14,7 +14,6 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 import com.idotools.notifycenterdemo.Model.FinalMessage;
 import com.idotools.notifycenterdemo.Model.NotifyResult;
 import com.idotools.notifycenterdemo.Model.StrategyResult;
@@ -22,7 +21,7 @@ import com.idotools.notifycenterdemo.Tools.GsonTools;
 import com.idotools.notifycenterdemo.Tools.HttpUtils;
 import com.idotools.notifycenterdemo.Tools.MyPicasso;
 
-import javax.security.auth.login.LoginException;
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
@@ -30,36 +29,36 @@ import java.util.Random;
 
 public class PullService extends Service {
     private static final String TAG = PullService.class.getSimpleName();
-    Context mContext = this;
+    private Context mContext = this;
 
     //handler & runnable
     private Handler handler = null;
     private Runnable runnable;
 
 
-    int minUpdateInterval[] = new int[24];
-    int maxUpdateInterval[] = new int[24];
-    int socketTimeout;
-    int reconnectInterval = 0;
-    int maxReconnectInterval;
-    boolean keepAlive;
+    private int minUpdateInterval[] = new int[24];
+    private int maxUpdateInterval[] = new int[24];
+    private int socketTimeout;
+    private int reconnectInterval = 0;
+    private int maxReconnectInterval;
+    private boolean keepAlive;
     //lastTimestamp
-    long lastTimeStamp;
+    private long lastTimeStamp;
 
-    int reconnectCountStrategy = 0;
-    int reconnectCountNotify = 0;
+    private int reconnectCountStrategy = 0;
+    private int reconnectCountNotify = 0;
 
-    SharedPreferences sharedPreferences;
-    SharedPreferences.Editor spEditor;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor spEditor;
 
-    int notifyid = 0;
+    private int notifyid = 0;
 
 
-    String notifyUrl = "https://data3.idotools.com:10325/getNotice";
+    private static final String notifyUrl = "https://data3.idotools.com:10325/getNotice";
+    private static final String strategyUrl = "https://data3.idotools.com:10325/getStrategy";
 
-    String strategyUrl = "https://data3.idotools.com:10325/getStrategy";
-    static StrategyResult strategyResult;
-    static NotifyResult notifyResult;
+    private static StrategyResult strategyResult;
+    private static NotifyResult notifyResult;
 
     public PullService() {
 
@@ -82,8 +81,6 @@ public class PullService extends Service {
         //sharedpreference
         sharedPreferences = getSharedPreferences("updateStrategy", Context.MODE_PRIVATE);
         spEditor = sharedPreferences.edit();
-
-        //getStrategyAndPull(true);
         getStrategy(false);
 
         handler = new Handler();
@@ -92,15 +89,11 @@ public class PullService extends Service {
             public void run() {
                 pullMessageByStrategy();
                 getStrategy(true);
-                handler.postDelayed(this, getRandomInterval());//
-
-                //debug only
-                //pullMessageNow();
-                //handler.postDelayed(this, 10000);//
+                handler.postDelayed(this, getRandomInterval());
             }
         };
 
-        handler.postDelayed(runnable, 5000);//
+        handler.postDelayed(runnable, getRandomInterval());//
 
     }
 
@@ -127,10 +120,8 @@ public class PullService extends Service {
         keepAlive = sharedPreferences.getBoolean("keepAlive", false);
         //lastTimestamp
         lastTimeStamp = sharedPreferences.getLong("lastTimeStamp", 0);
-
-        //pullMessageByStrategy();
-
     }
+
     private void pullMessageByStrategy(){
         long interval = System.currentTimeMillis() - lastTimeStamp;
 
@@ -144,12 +135,13 @@ public class PullService extends Service {
         new PullNotifyTask().execute(0);
         new PullStrategyTask().execute(0);
     }
+
     public void pullMessageRetry(int count){
         int interval;
         if (reconnectInterval *count > maxReconnectInterval){
             interval = maxReconnectInterval;
         } else {
-            interval = count * reconnectInterval;
+            interval = (int)Math.pow(2,count-1)* reconnectInterval;
         }
 
         new PullNotifyTask().execute(interval);
@@ -240,9 +232,12 @@ public class PullService extends Service {
             try {
                 String result = HttpUtils.postResponse(strategyUrl, lastTimeStamp);
                 return result;
-            } catch (UnknownHostException e){
+            } catch (SSLHandshakeException e){
+                Log.d(TAG,"SSL Handshake error");
+                return "UnknownHost";
+            }
+            catch (UnknownHostException e){
                 Log.d(TAG,"connection error");
-                //e.printStackTrace();
                 return "UnknownHost";
             } catch (IOException e) {
 
@@ -263,9 +258,7 @@ public class PullService extends Service {
 
 
     class PullNotifyTask extends AsyncTask<Integer,Void,String> {
-
         @Override
-
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             int status;
@@ -318,7 +311,11 @@ public class PullService extends Service {
             try {
                 String result = HttpUtils.postResponse(notifyUrl, lastTimeStamp);
                 return result;
-            } catch (UnknownHostException e){
+
+            } catch (SSLHandshakeException e){
+                Log.d(TAG,"SSL Handshake error");
+                return "UnknownHost";
+            }catch (UnknownHostException e){
                 Log.d(TAG,"connection error");
                 //e.printStackTrace();
                 return "UnknownHost";
@@ -331,7 +328,6 @@ public class PullService extends Service {
         }
 
         @Override
-
         protected void onPreExecute() {
             super.onPreExecute();
 
@@ -348,9 +344,9 @@ public class PullService extends Service {
 
 
     private void showNotification(FinalMessage finalMessage){
+
         int id = notifyid;
         notifyid++;//通知id
-
         String title = finalMessage.getTitle();
         String contentAbstract = finalMessage.getContentAbstract();
         String icon = finalMessage.getIcon();
@@ -371,7 +367,7 @@ public class PullService extends Service {
         Intent intent = new Intent(mContext, ShowActivity.class);
         intent.putExtra("type","article");
         intent.putExtra("msgid", msgid);
-        PendingIntent pendingIntent = PendingIntent.getActivity(mContext,0,intent,PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext,id,intent,PendingIntent.FLAG_CANCEL_CURRENT);
         notification.contentIntent =pendingIntent;
 
 
@@ -385,8 +381,5 @@ public class PullService extends Service {
 
 
         mNotifyMgr.notify(id, notification);
-
-
-
     }
 }

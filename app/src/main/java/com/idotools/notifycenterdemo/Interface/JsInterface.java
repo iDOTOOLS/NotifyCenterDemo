@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.DisplayMetrics;
 import android.webkit.JavascriptInterface;
+import android.widget.Toast;
 import com.idotools.notifycenterdemo.ImageActivity;
 import com.idotools.notifycenterdemo.MyApplication;
 
@@ -75,6 +76,11 @@ public class JsInterface {
     @JavascriptInterface
     public  int fontSizeLevel(){
         return MyApplication.getFontSizeLevel();
+    }
+
+    @JavascriptInterface
+    public void showErrorMessage(String msg){
+        Toast.makeText(MyApplication.getAppContext(),msg,Toast.LENGTH_SHORT).show();
     }
 
 }

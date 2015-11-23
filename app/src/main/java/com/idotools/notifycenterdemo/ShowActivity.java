@@ -1,6 +1,5 @@
 package com.idotools.notifycenterdemo;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,34 +13,31 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.*;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import com.idotools.notifycenterdemo.Interface.JsInterface;
 
-import java.util.Timer;
 
 public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshLayout.OnRefreshListener{
-    int MSG_TIMEOUT=-1;
-    Context mContext = this;
-    WebView webView;
-    ProgressBar progressBar;
-    RelativeLayout relativeLayout;
+    private int MSG_TIMEOUT = -1;
+    private Context mContext = this;
+    private WebView webView;
+    private ProgressBar progressBar;
+    private RelativeLayout relativeLayout;
 
-    String msgid;
-    String baseUrl = "https://data3.idotools.com:10325/notificationCenter";
-    String errorUrl = "file:///android_asset/errorPage.html";
-    String finalUrl = "";
+    private String msgid;
+    private String baseUrl = "https://data3.idotools.com:10325/notificationCenter";
+    private String errorUrl = "file:///android_asset/errorPage.html";
+    private String finalUrl = "";
 
-    String intentType; //list or article. get from intent
+    private String intentType; //list or article. get from intent
 
-    JsInterface jsInterface;
-    Timer timer;
-    long timeout = 5000;
-    long timestamp;
-    SharedPreferences sp;
-    SharedPreferences.Editor editor;
+    private JsInterface jsInterface;
+    private long timestamp;
+    private SharedPreferences sp;
+    private SharedPreferences.Editor editor;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show);
@@ -58,7 +54,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setAppCacheMaxSize(1024 * 1024 * 8);
         webView.getSettings().setDatabaseEnabled(true);
-        String cacheDirPath =webView.getContext().getDir("database",MODE_PRIVATE).getAbsolutePath();
+        String cacheDirPath = webView.getContext().getDir("database",MODE_PRIVATE).getAbsolutePath();
         webView.getSettings().setDatabasePath(cacheDirPath);
         webView.getSettings().setAppCacheEnabled(true);
         webView.getSettings().setAppCachePath(cacheDirPath);
@@ -146,7 +142,6 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
 
         //show H5 pages
         Intent intent = getIntent();
-        //showPicFlag = intent.getBooleanExtra("showPicFlag", true);
         intentType = intent.getStringExtra("type");
         if (intentType.equals("article")) {
             msgid = intent.getStringExtra("msgid");
@@ -157,9 +152,9 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
             finalUrl = getListUrl();
             webView.loadUrl(finalUrl);
         }
-        //update timestamp
+        //update list timestamp
         timestamp = System.currentTimeMillis();
-        editor.putLong("lastTimeStamp",timestamp);
+        editor.putLong("listTimeStamp",timestamp).apply();
 
 
     }
@@ -167,16 +162,16 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
     private String getArticleUrl(String msgid) {
         String articleUrl = baseUrl + "?action=article"
                 + "&articleId=" + msgid
-                + "&userId=" +MyApplication.getUserId()
-                + "&languageCode="+MyApplication.getLanguageInfo();
+                + "&userId=" + MyApplication.getUserId()
+                + "&languageCode="+ MyApplication.getLanguageInfo();
         Log.d("url", articleUrl);
         return articleUrl;
     }
 
     private String getListUrl() {
         String articleUrl = baseUrl + "?action=articleList"
-                + "&userId=" +MyApplication.getUserId()
-                + "&languageCode="+MyApplication.getLanguageInfo();
+                + "&userId=" + MyApplication.getUserId()
+                + "&languageCode="+ MyApplication.getLanguageInfo();
         Log.d("url", articleUrl);
         return articleUrl;
     }
