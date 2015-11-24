@@ -29,7 +29,8 @@
 
         <activity
             android:name=".ShowActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask">
         </activity>
         <activity
             android:name=".ImageActivity"

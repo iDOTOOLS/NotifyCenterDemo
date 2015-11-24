@@ -11,6 +11,8 @@ import javax.net.ssl.*;
 
 /**
  * Created by LvWind on 15/11/4.
+ * Picture downloading and caching library helper
+ * based on an SSL error ignored OkHttp client
  */
 public class MyPicasso {
     private static Picasso mInstance = null;

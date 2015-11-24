@@ -26,7 +26,10 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.Random;
-
+/**
+ * Created by LvWind on 15/10/28.
+ * the main service of pull messages and strategy
+ */
 public class PullService extends Service {
     private static final String TAG = PullService.class.getSimpleName();
     private Context mContext = this;
@@ -78,9 +81,11 @@ public class PullService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        //sharedpreference
+
         sharedPreferences = getSharedPreferences("updateStrategy", Context.MODE_PRIVATE);
         spEditor = sharedPreferences.edit();
+
+        /**get default strategy in sharedPreference */
         getStrategy(false);
 
         handler = new Handler();
@@ -104,6 +109,11 @@ public class PullService extends Service {
         super.onDestroy();
     }
 
+
+    /**
+     * get strategy from server or local
+     * @param needRefresh flag of get new strategy from server
+     * */
     private void getStrategy(boolean needRefresh){
         if(needRefresh){
             new PullStrategyTask().execute(0);
@@ -122,6 +132,9 @@ public class PullService extends Service {
         lastTimeStamp = sharedPreferences.getLong("lastTimeStamp", 0);
     }
 
+    /**
+     * pull messages obey the strategy
+     * */
     private void pullMessageByStrategy(){
         long interval = System.currentTimeMillis() - lastTimeStamp;
 
@@ -131,17 +144,23 @@ public class PullService extends Service {
 
     }
 
+    /**
+     * pull messages immediately
+     * for test
+     * */
     public  void pullMessageNow(){
         new PullNotifyTask().execute(0);
         new PullStrategyTask().execute(0);
     }
 
+    /**
+     * retrying pull messages
+     * @param count retry count
+     * */
     public void pullMessageRetry(int count){
-        int interval;
-        if (reconnectInterval *count > maxReconnectInterval){
+        int interval = (int)Math.pow(2,count-1)* reconnectInterval;
+        if (interval > maxReconnectInterval){
             interval = maxReconnectInterval;
-        } else {
-            interval = (int)Math.pow(2,count-1)* reconnectInterval;
         }
 
         new PullNotifyTask().execute(interval);
@@ -149,7 +168,10 @@ public class PullService extends Service {
         Log.i("pullMessageRetry","retry Interval="+ interval);
     }
 
-
+    /**
+     * get the interval time randomly between min and max
+     * by minutes
+     * */
     private long getRandomInterval(){
         int h = getHour();
         Random random = new Random();
@@ -160,6 +182,10 @@ public class PullService extends Service {
     }
 
 
+    /**
+     * Async task of pulling strategy
+     * @Integer the retry interval time
+     * */
     class PullStrategyTask extends AsyncTask<Integer,Void,String> {
 
         @Override
@@ -251,12 +277,13 @@ public class PullService extends Service {
 
         protected void onPreExecute() {
             super.onPreExecute();
-
-
         }
     }
 
-
+    /**
+     * Async task of pulling notification
+     * @Integer the retry interval time
+     * */
     class PullNotifyTask extends AsyncTask<Integer,Void,String> {
         @Override
         protected void onPostExecute(String result) {
@@ -330,19 +357,21 @@ public class PullService extends Service {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
-
         }
     }
 
-
+    /**
+     * get the hour of the day
+     * 24-hours format
+     * */
     private int getHour(){
         Calendar c = Calendar.getInstance();
-        int Hr24=c.get(Calendar.HOUR_OF_DAY);
-        return Hr24;
+        return c.get(Calendar.HOUR_OF_DAY);
     }
 
-
+    /**
+     * build notifications and show
+     * */
     private void showNotification(FinalMessage finalMessage){
 
         int id = notifyid;
@@ -351,6 +380,15 @@ public class PullService extends Service {
         String contentAbstract = finalMessage.getContentAbstract();
         String icon = finalMessage.getIcon();
         String msgid = finalMessage.getId();
+
+        String lastMsgId = sharedPreferences.getString("lastMsgId","");
+        if (msgid == null || lastMsgId.equals(msgid)){
+            return;
+        } else {
+            spEditor.putString("lastMsgId", msgid);
+        }
+
+
         //bulid notification
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
@@ -371,14 +409,13 @@ public class PullService extends Service {
         notification.contentIntent =pendingIntent;
 
 
-        //remoteviewt
+        //remoteView
         RemoteViews remoteViews =
                 new RemoteViews(this.getPackageName(), R.layout.notification);
         notification.contentView = remoteViews;
         remoteViews.setTextViewText(R.id.title,title);
         remoteViews.setTextViewText(R.id.text, contentAbstract);
         MyPicasso.getInstance(mContext).load(icon).into(remoteViews,R.id.image,id,notification);
-
 
         mNotifyMgr.notify(id, notification);
     }

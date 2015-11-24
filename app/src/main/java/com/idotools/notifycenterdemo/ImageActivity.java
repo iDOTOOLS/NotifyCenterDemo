@@ -17,7 +17,10 @@ import com.idotools.notifycenterdemo.Tools.MyPicasso;
 import com.idotools.notifycenterdemo.view.ViewPagerFixed;
 import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
-
+/**
+ * Created by LvWind on 15/10/28.
+ * Activity of showing the news
+ */
 public class ImageActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
     Context mContext =this;
     ViewPagerFixed viewPager;

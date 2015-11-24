@@ -18,7 +18,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import com.idotools.notifycenterdemo.Interface.JsInterface;
 
-
+/**
+ * Created by LvWind on 15/10/28.
+ * Activity of show pictures with viewPager
+ */
 public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshLayout.OnRefreshListener{
     private int MSG_TIMEOUT = -1;
     private Context mContext = this;
@@ -189,6 +192,11 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         }
     };
 
+
+    /**
+     * rewrite the back key press event
+     * based on the return value of jsInterface
+     * */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -212,6 +220,13 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         super.onDestroy();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        msgid = intent.getStringExtra("msgid");
+        finalUrl = getArticleUrl(msgid);
+        webView.loadUrl(finalUrl);
+    }
+
     @JavascriptInterface
     public String reload() {
         return finalUrl;
@@ -220,7 +235,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
 
 
     /**
-     *A fix of
+     *A fix of the exception
      *android.view.WindowLeaked: Activity has leaked window android.widget.ZoomButtonsController$Container that was originally added here
      *http://stackoverflow.com/questions/27254570/android-view-windowleaked-activity-has-leaked-window-android-widget-zoombuttons
      **/

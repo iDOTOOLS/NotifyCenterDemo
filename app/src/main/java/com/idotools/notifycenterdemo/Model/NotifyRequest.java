@@ -4,6 +4,7 @@ import com.idotools.notifycenterdemo.MyApplication;
 
 /**
  * Created by LvWind on 15/10/29.
+ * Class of notify requests
  */
 public class NotifyRequest {
     private long lastTimestamp =MyApplication.getLastTimestamp();

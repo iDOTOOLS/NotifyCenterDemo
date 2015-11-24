@@ -8,6 +8,8 @@ import android.preference.PreferenceManager;
 
 /**
  * Created by LvWind on 15/11/10.
+ * default Application
+ * get global params and settings
  */
 public class MyApplication extends Application{
     private static Context context;

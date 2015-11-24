@@ -2,6 +2,7 @@ package com.idotools.notifycenterdemo.Model;
 
 /**
  * Created by LvWind on 15/10/28.
+ * class of results of the notify request
  */
 public class NotifyResult {
     private FinalMessage message;

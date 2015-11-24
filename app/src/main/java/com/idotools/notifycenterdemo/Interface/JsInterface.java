@@ -10,6 +10,7 @@ import com.idotools.notifycenterdemo.MyApplication;
 
 /**
  * Created by LvWind on 15/11/3.
+ * JavaScript Interface
  */
 public class JsInterface {
     Context mContext;

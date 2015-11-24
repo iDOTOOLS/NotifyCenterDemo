@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 //    SharedPreferences sharedPreferences;
 //    SharedPreferences.Editor spEditor;
 
-    Button button,button2,button3,button4,button5,button6;
+    Button button,button2,button3,button4,button6;
     TextView TVtitle,TVcontentAbstract;
     ImageView IVicon;
 
@@ -48,9 +48,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //sharedpreference
-        //sharedPreferences = getSharedPreferences("updateStrategy", Context.MODE_PRIVATE);
-        //spEditor = sharedPreferences.edit();
 
         //init view
         setContentView(R.layout.activity_main);

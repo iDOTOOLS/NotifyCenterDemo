@@ -2,6 +2,7 @@ package com.idotools.notifycenterdemo.Model;
 
 /**
  * Created by LvWind on 15/10/28.
+ * class of the final notification message to show
  */
 public class FinalMessage {
     private String contentAbstract;

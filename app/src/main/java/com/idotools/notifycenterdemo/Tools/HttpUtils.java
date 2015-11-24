@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by LvWind on 15/10/30.
+ * Http connection helper
+ * based on an SSL error ignored OkHttp client
  */
 public class HttpUtils {
     private static final String TAG = HttpUtils.class.getSimpleName();

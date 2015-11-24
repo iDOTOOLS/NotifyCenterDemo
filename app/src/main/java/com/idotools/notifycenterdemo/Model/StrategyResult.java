@@ -2,6 +2,7 @@ package com.idotools.notifycenterdemo.Model;
 
 /**
  * Created by LvWind on 15/10/29.
+ * class of result of strategy request
  */
 public class StrategyResult {
     private MinUpdateInterval minUpdateInterval;
