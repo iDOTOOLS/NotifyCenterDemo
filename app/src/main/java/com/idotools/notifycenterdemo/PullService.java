@@ -63,6 +63,8 @@ public class PullService extends Service {
     private static StrategyResult strategyResult;
     private static NotifyResult notifyResult;
 
+    private AsyncTask retryTask;
+
     public PullService() {
 
     }
@@ -116,7 +118,11 @@ public class PullService extends Service {
      * */
     private void getStrategy(boolean needRefresh){
         if(needRefresh){
-            new PullStrategyTask().execute(0);
+            if (MyApplication.hasNetworkConnection()) {
+                new PullStrategyTask().execute(0);
+            } else {
+                Log.d("getStrategy","no network");
+            }
         }
         //更新策略
         for (int i = 0; i < 24; i++) {
@@ -138,8 +144,17 @@ public class PullService extends Service {
     private void pullMessageByStrategy(){
         long interval = System.currentTimeMillis() - lastTimeStamp;
 
-        if (interval >= getRandomInterval()){
-            new PullNotifyTask().execute(0);
+        if (MyApplication.hasNetworkConnection()) {
+            if (interval >= getRandomInterval()) {
+                if (retryTask != null){
+                    retryTask.cancel(true);
+                    new PullNotifyTask().execute(0);
+                } else {
+                    new PullNotifyTask().execute(0);
+                }
+            }
+        } else {
+            Log.d("pullMessageByStrategy","no network");
         }
 
     }
@@ -149,8 +164,12 @@ public class PullService extends Service {
      * for test
      * */
     public  void pullMessageNow(){
-        new PullNotifyTask().execute(0);
-        new PullStrategyTask().execute(0);
+        if (MyApplication.hasNetworkConnection()) {
+            new PullNotifyTask().execute(0);
+            new PullStrategyTask().execute(0);
+        } else {
+            Log.d("pullMessageNow","no network");
+        }
     }
 
     /**
@@ -163,9 +182,13 @@ public class PullService extends Service {
             interval = maxReconnectInterval;
         }
 
-        new PullNotifyTask().execute(interval);
-        Log.i("pullMessageRetry","retry count="+ count);
-        Log.i("pullMessageRetry","retry Interval="+ interval);
+        if (MyApplication.hasNetworkConnection()) {
+            retryTask = new PullNotifyTask().execute(interval);
+            Log.i("pullMessageRetry", "retry count=" + count);
+            Log.i("pullMessageRetry", "retry Interval=" + interval);
+        } else {
+            Log.d("pullMessageRetry","no network");
+        }
     }
 
     /**
@@ -177,8 +200,17 @@ public class PullService extends Service {
         Random random = new Random();
         int max = maxUpdateInterval[h];
         int min = minUpdateInterval[h];
-        long randomInterval = ((long)random.nextInt(max - min + 1) + min) * 60 * 1000;
-        return  randomInterval;
+
+
+        if (min > max){ //人工配置时间间隔失误,没有配对时
+            return max * 60 *1000;
+
+        }else{
+            long randomInterval = ((long)random.nextInt(max - min + 1) + min) * 60 * 1000;
+            return  randomInterval;
+        }
+
+
     }
 
 

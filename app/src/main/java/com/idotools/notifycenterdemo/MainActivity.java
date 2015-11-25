@@ -34,6 +34,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         //bind service
+//        Intent intent = new Intent(MainActivity.this,PullService.class);
+//        bindService(intent, mConnection, 0);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //bind service
         Intent intent = new Intent(MainActivity.this,PullService.class);
         bindService(intent, mConnection, 0);
     }

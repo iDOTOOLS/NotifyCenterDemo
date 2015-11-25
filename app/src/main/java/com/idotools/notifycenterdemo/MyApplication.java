@@ -3,7 +3,10 @@ package com.idotools.notifycenterdemo;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 
 /**
@@ -21,6 +24,14 @@ public class MyApplication extends Application{
 
     public static Context getAppContext(){
        return MyApplication.context;
+    }
+    public static boolean hasNetworkConnection(){
+        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            return networkInfo.isAvailable();
+        }
+        return false;
     }
 
     public static String getLanguageInfo() {

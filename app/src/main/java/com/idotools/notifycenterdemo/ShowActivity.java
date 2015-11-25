@@ -18,12 +18,15 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import com.idotools.notifycenterdemo.Interface.JsInterface;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Created by LvWind on 15/10/28.
  * Activity of show pictures with viewPager
  */
 public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshLayout.OnRefreshListener{
-    private int MSG_TIMEOUT = -1;
+    private static final int TIMEOUT = 5000;
     private Context mContext = this;
     private WebView webView;
     private ProgressBar progressBar;
@@ -85,62 +88,20 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
                             progressBar.setVisibility(View.GONE);
                             webView.setVisibility(View.VISIBLE);
                         }
-                    },300);
-
-
-                    //mSwipeLayout.setRefreshing(false);
-                    //Log.d("",webView.getUrl());
+                    }, 300);
                 } else {
                     webView.setVisibility(View.INVISIBLE);
                     progressBar.setVisibility(View.VISIBLE);
-//                    if (!mSwipeLayout.isRefreshing())
-//                        mSwipeLayout.setRefreshing(true);
                 }
 
                 super.onProgressChanged(view, newProgress);
             }
 
         });
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
-                    return false;
-                } else {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(intent);
-                    return true;
-                }
-            }
 
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
 
-            }
+        webView.setWebViewClient(new MyWebViewClient());
 
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-            }
-
-            @Override
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                load404page();
-                //super.onReceivedError(view, errorCode, description, failingUrl);
-            }
-
-            @Override
-            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                // 忽略SSL错误
-                handler.proceed();
-            }
-
-            @Override
-            public void onLoadResource(WebView view, String url) {
-                super.onLoadResource(view, url);
-            }
-        });
 
 
         //show H5 pages
@@ -160,6 +121,65 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         editor.putLong("listTimeStamp",timestamp).apply();
 
 
+    }
+    /**
+     * WebViewClient with timeout check
+     * */
+    public class MyWebViewClient extends WebViewClient{
+        boolean timeout;
+
+        public MyWebViewClient(){
+            timeout = true;
+        }
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                return false;
+            } else {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
+                return true;
+            }
+        }
+
+        @Override
+        public void onPageStarted( WebView view, String url, Bitmap favicon) {
+            //super.onPageStarted(view, url, favicon);
+            timeout = true;
+            Runnable run = new Runnable() {
+                @Override
+                public void run() {
+                    if (timeout){
+                        load404page();
+                    }
+                }
+            };
+            new Handler().postDelayed(run, TIMEOUT);
+
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            timeout = false;
+        }
+
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            load404page();
+            //super.onReceivedError(view, errorCode, description, failingUrl);
+        }
+
+        @Override
+        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            // 忽略SSL错误
+            handler.proceed();
+        }
+
+        @Override
+        public void onLoadResource(WebView view, String url) {
+            super.onLoadResource(view, url);
+        }
     }
 
     private String getArticleUrl(String msgid) {
@@ -182,15 +202,6 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         webView.loadUrl(errorUrl + "?deviceLang=" + MyApplication.getLanguageInfo());
     }
 
-
-    Handler mHandler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == MSG_TIMEOUT){
-                load404page();
-            }
-        }
-    };
 
 
     /**
