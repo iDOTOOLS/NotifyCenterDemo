@@ -89,6 +89,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
                             webView.setVisibility(View.VISIBLE);
                         }
                     }, 300);
+
                 } else {
                     webView.setVisibility(View.INVISIBLE);
                     progressBar.setVisibility(View.VISIBLE);
@@ -116,10 +117,6 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
             finalUrl = getListUrl();
             webView.loadUrl(finalUrl);
         }
-        //update list timestamp
-        timestamp = System.currentTimeMillis();
-        editor.putLong("lastTimeStamp",timestamp).apply();
-
 
     }
     /**
@@ -162,6 +159,10 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             timeout = false;
+
+            //update list timestamp
+            timestamp = System.currentTimeMillis();
+            editor.putLong("lastTimeStamp",timestamp).apply();
         }
 
         @Override
