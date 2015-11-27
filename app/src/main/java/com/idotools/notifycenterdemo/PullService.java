@@ -104,6 +104,7 @@ public class PullService extends Service {
 
     }
 
+
     @Override
     public void onDestroy() {
         Log.d(TAG,"service destroyed");
@@ -142,6 +143,7 @@ public class PullService extends Service {
      * pull messages obey the strategy
      * */
     private void pullMessageByStrategy(){
+        lastTimeStamp = sharedPreferences.getLong("lastTimeStamp",0);
         long interval = System.currentTimeMillis() - lastTimeStamp;
 
         if (MyApplication.hasNetworkConnection()) {
@@ -164,6 +166,7 @@ public class PullService extends Service {
      * for test
      * */
     public  void pullMessageNow(){
+        lastTimeStamp = sharedPreferences.getLong("lastTimeStamp",0);
         if (MyApplication.hasNetworkConnection()) {
             new PullNotifyTask().execute(0);
             new PullStrategyTask().execute(0);

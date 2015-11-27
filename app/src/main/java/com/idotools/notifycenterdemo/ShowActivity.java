@@ -26,7 +26,7 @@ import java.util.TimerTask;
  * Activity of show pictures with viewPager
  */
 public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshLayout.OnRefreshListener{
-    private static final int TIMEOUT = 5000;
+    private static final int TIMEOUT = 15000;
     private Context mContext = this;
     private WebView webView;
     private ProgressBar progressBar;
@@ -118,7 +118,7 @@ public class ShowActivity extends AppCompatActivity { //implements SwipeRefreshL
         }
         //update list timestamp
         timestamp = System.currentTimeMillis();
-        editor.putLong("listTimeStamp",timestamp).apply();
+        editor.putLong("lastTimeStamp",timestamp).apply();
 
 
     }
